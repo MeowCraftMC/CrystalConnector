@@ -32,6 +32,8 @@ public class CrystalService : IHostedService
     
     private void OnStopped()
     {
+        Logger.LogInformation("Goodbye!");
+        LogManager.Shutdown();
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -41,8 +43,6 @@ public class CrystalService : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        LogManager.Shutdown();
-
         return Task.CompletedTask;
     }
 }

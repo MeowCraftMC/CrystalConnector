@@ -10,11 +10,10 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddHostedService<CrystalService>();
 
-// builder.Services.AddSingleton<Bot>();
-
 builder.Environment.ContentRootPath = Directory.GetCurrentDirectory();
+
 builder.Configuration.AddJsonFile("config.json", true)
-    .AddJsonFile($"config.{builder.Environment.EnvironmentName}.json")
+    .AddJsonFile($"config.{builder.Environment.EnvironmentName}.json", true)
     .AddEnvironmentVariables(prefix: "CRYSTAL_")
     .AddCommandLine(args);
 
