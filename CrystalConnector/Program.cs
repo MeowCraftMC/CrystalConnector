@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using CrystalConnector;
+using CrystalConnector.Handlers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,8 @@ var builder = Host.CreateDefaultBuilder(args);
 builder.ConfigureServices(services =>
 {
     services.AddHostedService<CrystalService>();
+    
+    ConfigureServices(services);
 });
 
 builder.ConfigureAppConfiguration((context, config) =>
@@ -27,15 +30,13 @@ builder.ConfigureAppConfiguration((context, config) =>
 
 builder.UseContentRoot(Environment.CurrentDirectory);
 
-builder.ConfigureLogging(logging =>
-{
-    logging.ClearProviders()
-        .SetMinimumLevel(LogLevel.Trace)
-        .AddNLog();
-});
+builder.ConfigureLogging(ConfigureLogging);
 
 builder.ConfigureWebHost(webHost =>
 {
+    webHost.ConfigureServices(ConfigureServices);
+    webHost.ConfigureLogging(ConfigureLogging);
+
     webHost.UseStartup<Startup>();
 
     webHost.UseKestrel();
@@ -81,3 +82,15 @@ builder.ConfigureWebHost(webHost =>
 using var host = builder.Build();
 
 await host.RunAsync();
+
+void ConfigureLogging(ILoggingBuilder logging)
+{
+    logging.ClearProviders()
+        .SetMinimumLevel(LogLevel.Trace)
+        .AddNLog();
+}
+
+void ConfigureServices(IServiceCollection services)
+{
+    services.AddSingleton<IWebSocketHandler, WebSocketHandler>();
+}
