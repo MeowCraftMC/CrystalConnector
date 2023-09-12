@@ -1,2 +1,16 @@
 {
+  "server": {
+    "listen": [
+      {
+        "enabled": true,
+        "ip": "0.0.0.0",
+        "port": 33927,
+        "https": {
+          "enabled": false,
+          "cert": "cert.pfx",
+          "password": ""
+        }
+      }
+    ]
+  }
 }

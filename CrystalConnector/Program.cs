@@ -1,4 +1,5 @@
 ﻿using CrystalConnector;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -6,20 +7,39 @@ using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = Host.CreateDefaultBuilder(args);
 
-builder.Services.AddHostedService<CrystalService>();
+builder.ConfigureServices(services =>
+{
+    services.AddHostedService<CrystalService>();
+});
 
-builder.Environment.ContentRootPath = Directory.GetCurrentDirectory();
+builder.ConfigureAppConfiguration((context, config) =>
+{
+    config.Sources.Clear();
+    config.AddJsonFile("config.json", optional: true, reloadOnChange: true)
+        .AddJsonFile($"config.{context.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+        .AddCommandLine(args)
+        .AddEnvironmentVariables();
+});
 
-builder.Configuration.AddJsonFile("config.json", true)
-    .AddJsonFile($"config.{builder.Environment.EnvironmentName}.json", true)
-    .AddEnvironmentVariables(prefix: "CRYSTAL_")
-    .AddCommandLine(args);
+builder.UseContentRoot(Environment.CurrentDirectory);
 
-builder.Logging.ClearProviders()
-    .SetMinimumLevel(LogLevel.Trace)
-    .AddNLog();
+builder.ConfigureWebHost(webHost =>
+{
+    webHost.UseStartup<Startup>();
+    
+    webHost.UseKestrel(kestrel =>
+    {
+    });
+});
+
+builder.ConfigureLogging(logging =>
+{
+    logging.ClearProviders()
+        .SetMinimumLevel(LogLevel.Trace)
+        .AddNLog();
+});
 
 using var host = builder.Build();
 
