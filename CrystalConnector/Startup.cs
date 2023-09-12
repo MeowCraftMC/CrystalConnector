@@ -22,5 +22,17 @@ public class Startup
 
     public void Configure(IApplicationBuilder app)
     {
+        app.UseWebSockets();
+        
+        app.Use(async (context, next) =>
+        {
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                await context.WebSockets.AcceptWebSocketAsync();
+                Logger.Info("Got WebSocket connection from {Ip}:{Port}", context.Connection.RemoteIpAddress?.ToString(), context.Connection.RemotePort);
+            }
+
+            await next(context);
+        });
     }
 }
