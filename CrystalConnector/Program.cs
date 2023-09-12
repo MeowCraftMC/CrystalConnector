@@ -1,4 +1,6 @@
-﻿using CrystalConnector;
+﻿using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using CrystalConnector;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,20 +27,55 @@ builder.ConfigureAppConfiguration((context, config) =>
 
 builder.UseContentRoot(Environment.CurrentDirectory);
 
-builder.ConfigureWebHost(webHost =>
-{
-    webHost.UseStartup<Startup>();
-    
-    webHost.UseKestrel(kestrel =>
-    {
-    });
-});
-
 builder.ConfigureLogging(logging =>
 {
     logging.ClearProviders()
         .SetMinimumLevel(LogLevel.Trace)
         .AddNLog();
+});
+
+builder.ConfigureWebHost(webHost =>
+{
+    webHost.UseStartup<Startup>();
+
+    webHost.UseKestrel();
+
+    webHost.ConfigureKestrel((context, kestrel) =>
+    {
+        var config = context.Configuration;
+        foreach (var listener in config.GetSection("Server:Listener").GetChildren())
+        {
+            if (listener.GetValue<bool>("Enabled"))
+            {
+                var ipStr = listener.GetValue<string>("IP");
+                if (!IPAddress.TryParse(ipStr, out var ip))
+                {
+                    continue;
+                }
+            
+                var port = listener.GetValue<int>("Port");
+
+                var https = listener.GetSection("Https");
+                if (!https.GetValue<bool>("Enabled") || https.GetValue<string>("Cert") == null)
+                {
+                    kestrel.Listen(ip, port);
+                }
+                else
+                {
+                    var cert = https.GetValue<string>("Cert");
+                    var password = https.GetValue<string>("Password");
+
+                    kestrel.Listen(ip, port, listenOptions =>
+                    {
+                        listenOptions.UseHttps(httpsOptions =>
+                        {
+                            httpsOptions.ServerCertificate = X509Certificate2.CreateFromEncryptedPemFile(cert!, password);
+                        });
+                    });
+                }
+            }
+        }
+    });
 });
 
 using var host = builder.Build();

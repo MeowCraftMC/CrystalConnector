@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 
 namespace CrystalConnector;
 
 public class Startup
 {
-    public IConfiguration Config { get; }
+    private IConfiguration Config { get; }
+
+    private Logger Logger { get; } = LogManager.GetCurrentClassLogger();
 
     public Startup(IConfiguration config)
     {
