@@ -14,8 +14,9 @@
         ]
     },
     "Connector": {
+        "Debug": false,
         "Auth": {
-            "Secret": "qyl27IsHere!"
+            "Secret": "<I am an example secret!>"
         }
     }
 }

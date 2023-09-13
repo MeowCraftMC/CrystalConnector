@@ -24,11 +24,21 @@ public static class WebSocketExtension
 
     public static void Disconnect(this WebSocket webSocket)
     {
-        var data = GetConnectionInfo(webSocket);
-        data.CompletionSource.SetResult(WebSocketHandleResult.Successful);
+        var info = GetConnectionInfo(webSocket);
+        info.CompletionSource.SetResult(WebSocketHandleResult.Successful);
 
         webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         
         WebSocketConnectionManager.Info.Remove(webSocket);
+    }
+
+    public static async Task Send(this WebSocket webSocket, byte[] data)
+    {
+        await webSocket.Send(data, 0, data.Length);
+    }
+    
+    public static async Task Send(this WebSocket webSocket, byte[] data, int startIndex, int length)
+    {
+        await webSocket.SendAsync(new ReadOnlyMemory<byte>(data, startIndex, length), WebSocketMessageType.Binary, true, CancellationToken.None);
     }
 }
