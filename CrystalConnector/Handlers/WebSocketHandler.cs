@@ -1,42 +1,36 @@
-﻿using System.Net;
+﻿using System.Formats.Cbor;
 using System.Net.WebSockets;
 using CrystalConnector.Utilities;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace CrystalConnector.Handlers;
 
-public class WebSocketHandler : IWebSocketHandler
+public class WebSocketHandler
 {
-    private ILogger<WebSocketHandler> Logger { get; }
+    private IConfiguration Config { get; }
 
-    public WebSocketHandler(ILogger<WebSocketHandler> logger)
+    private ILogger<WebSocketHandler> Logger { get; }
+    
+    public WebSocketHandler(IConfiguration config, ILogger<WebSocketHandler> logger)
     {
+        Config = config;
         Logger = logger;
     }
-
-    public async void StartHandle(HttpContext context, WebSocket webSocket, TaskCompletionSource<WebSocketHandleResult> taskCompletionSource)
+    
+    public void Handle(WebSocket webSocket, CborReader reader)
     {
-        var remoteEndPoint = new IPEndPoint(context.Connection.RemoteIpAddress!, context.Connection.RemotePort);    // qyl27: we believe it is a tcp connection.
-        var receiveCancellationTokenSource = new CancellationTokenSource();
-        webSocket.AddData(context.Connection.Id, remoteEndPoint, taskCompletionSource, receiveCancellationTokenSource);
-        await Handle(webSocket, receiveCancellationTokenSource.Token);
-    }
-
-    private async Task Handle(WebSocket webSocket, CancellationToken cancellationToken)
-    {
-        var buffer = new byte[1024 * 4];
-        
-        WebSocketReceiveResult receiveResult;
-        
-        do
+        var type = reader.ReadTextString();
+        if (type == "Authenticate")
         {
-            receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-        } while (!cancellationToken.IsCancellationRequested && !receiveResult.CloseStatus.HasValue);
-    }
-
-    public void Disconnect(WebSocket webSocket)
-    {
-        webSocket.RemoveData();
+            if (!webSocket.GetConnectionInfo().Authorized)
+            {
+                var secret = reader.ReadTextString();
+                if (secret == Config.GetValue<string>("Connector:Auth:Secret"))
+                {
+                    webSocket.GetConnectionInfo().Authorized = true;
+                }
+            }
+        }
     }
 }

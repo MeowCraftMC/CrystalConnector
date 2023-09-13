@@ -1,5 +1,5 @@
-﻿using CrystalConnector.Handlers;
-using CrystalConnector.Utilities;
+﻿using CrystalConnector.Utilities;
+using CrystalConnector.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +12,7 @@ public class Startup
     private IConfiguration Config { get; }
     
     private ILogger<Startup> Logger { get; set; }
-    private IWebSocketHandler WebSocketHandler { get; set; }
+    private IWebSocketManager WebSocketManager { get; set; }
 
     public Startup(IConfiguration config)
     {
@@ -24,7 +24,7 @@ public class Startup
         var provider = services.BuildServiceProvider();
         
         Logger = provider.GetService<ILogger<Startup>>()!;
-        WebSocketHandler = provider.GetService<IWebSocketHandler>()!;
+        WebSocketManager = provider.GetService<IWebSocketManager>()!;
     }
 
     public void Configure(IApplicationBuilder app)
@@ -39,8 +39,7 @@ public class Startup
                 Logger.LogInformation("Got WebSocket connection from {Ip}:{Port}", context.Connection.RemoteIpAddress?.ToString(), context.Connection.RemotePort);
 
                 var taskCompletionSource = new TaskCompletionSource<WebSocketHandleResult>();
-                WebSocketHandler.StartHandle(context, websocket, taskCompletionSource);
-                await taskCompletionSource.Task;
+                await WebSocketManager.StartHandle(context, websocket, taskCompletionSource);
             }
             else
             {

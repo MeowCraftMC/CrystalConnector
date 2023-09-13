@@ -1,44 +1,34 @@
 ﻿using System.Net;
 using System.Net.WebSockets;
+using CrystalConnector.Connector;
 
 namespace CrystalConnector.Utilities;
 
 public static class WebSocketExtension
 {
-    private static Dictionary<WebSocket, WebSocketData> Data { get; } = new();
-
-    public static void AddData(this WebSocket webSocket, string id, IPEndPoint ip, 
-        TaskCompletionSource<WebSocketHandleResult> taskCompletionSource,
-        CancellationTokenSource receiveCancellationTokenSource)
+    public static void AddConnectionInfo(this WebSocket webSocket, string id, IPEndPoint ip, 
+        TaskCompletionSource<WebSocketHandleResult> taskCompletionSource)
     {
-        Data.Add(webSocket, new WebSocketData
+        WebSocketConnectionManager.Info.Add(webSocket, new WebSocketConnectionInfo
         {
             Id = id, 
             IpEndPoint = ip,
             CompletionSource = taskCompletionSource,
-            ReceiveCancellationTokenSource = receiveCancellationTokenSource
         });
     }
 
-    public static WebSocketData GetData(this WebSocket webSocket)
+    public static WebSocketConnectionInfo GetConnectionInfo(this WebSocket webSocket)
     {
-        return Data[webSocket];
+        return WebSocketConnectionManager.Info[webSocket];
     }
 
-    public static void RemoveData(this WebSocket webSocket)
+    public static void Disconnect(this WebSocket webSocket)
     {
-        var data = GetData(webSocket);
-        data.ReceiveCancellationTokenSource.Cancel();
+        var data = GetConnectionInfo(webSocket);
         data.CompletionSource.SetResult(WebSocketHandleResult.Successful);
-        
-        Data.Remove(webSocket);
-    }
 
-    public static void DisconnectAll()
-    {
-        foreach (var (socket, _) in Data)
-        {
-            RemoveData(socket);
-        }
+        webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+        
+        WebSocketConnectionManager.Info.Remove(webSocket);
     }
 }

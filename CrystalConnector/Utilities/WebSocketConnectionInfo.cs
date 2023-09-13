@@ -3,7 +3,7 @@ using CrystalConnector.Connector;
 
 namespace CrystalConnector.Utilities;
 
-public class WebSocketData
+public class WebSocketConnectionInfo
 {
     public required string Id { get; set; }
     
@@ -11,8 +11,6 @@ public class WebSocketData
     
     public required TaskCompletionSource<WebSocketHandleResult> CompletionSource { get; set; }
 
-    public required CancellationTokenSource ReceiveCancellationTokenSource { get; set; }
-    
     public bool Authorized { get; set; } = false;
 
     public List<MessageChannel> RegisteredChannels { get; } = new();

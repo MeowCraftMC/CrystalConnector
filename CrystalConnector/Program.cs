@@ -2,6 +2,7 @@
 using System.Security.Cryptography.X509Certificates;
 using CrystalConnector;
 using CrystalConnector.Handlers;
+using CrystalConnector.WebSockets;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -92,5 +93,6 @@ void ConfigureLogging(ILoggingBuilder logging)
 
 void ConfigureServices(IServiceCollection services)
 {
-    services.AddSingleton<IWebSocketHandler, WebSocketHandler>();
+    services.AddSingleton<IWebSocketManager, WebSocketManager>();
+    services.AddSingleton<WebSocketHandler>();
 }
