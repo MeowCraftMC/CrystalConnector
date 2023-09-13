@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CrystalConnector.Utilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
@@ -28,6 +29,7 @@ public class CrystalService : IHostedService
     private void OnStopping()
     {
         Logger.LogInformation("Stopping!");
+        WebSocketExtension.DisconnectAll();
     }
     
     private void OnStopped()

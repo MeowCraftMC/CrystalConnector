@@ -1,4 +1,5 @@
 ﻿using CrystalConnector.Handlers;
+using CrystalConnector.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,4 @@
-﻿namespace CrystalConnector.Handlers;
+﻿namespace CrystalConnector.Utilities;
 
 public enum WebSocketHandleResult
 {

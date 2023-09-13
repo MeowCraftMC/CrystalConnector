@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.WebSockets;
+using CrystalConnector.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -9,22 +10,33 @@ public class WebSocketHandler : IWebSocketHandler
 {
     private ILogger<WebSocketHandler> Logger { get; }
 
-    // Todo: qyl27: Maybe we need a MultiKeyMap? <string Id, IPEndPoint ip, Tuple<WebSocket, TaskCompletionSource<WebSocketHandleResult>>>
-    private Dictionary<IPEndPoint, Tuple<WebSocket, TaskCompletionSource<WebSocketHandleResult>>> WebSockets { get; } = new();
-
     public WebSocketHandler(ILogger<WebSocketHandler> logger)
     {
         Logger = logger;
     }
 
-    public void StartHandle(HttpContext context, WebSocket socket, TaskCompletionSource<WebSocketHandleResult> taskCompletionSource)
+    public async void StartHandle(HttpContext context, WebSocket webSocket, TaskCompletionSource<WebSocketHandleResult> taskCompletionSource)
     {
-        var remoteEndPoint = new IPEndPoint(context.Connection.RemoteIpAddress, context.Connection.RemotePort);
-        WebSockets.Add(remoteEndPoint, new Tuple<WebSocket, TaskCompletionSource<WebSocketHandleResult>>(socket, taskCompletionSource));
+        var remoteEndPoint = new IPEndPoint(context.Connection.RemoteIpAddress!, context.Connection.RemotePort);    // qyl27: we believe it is a tcp connection.
+        var receiveCancellationTokenSource = new CancellationTokenSource();
+        webSocket.AddData(context.Connection.Id, remoteEndPoint, taskCompletionSource, receiveCancellationTokenSource);
+        await Handle(webSocket, receiveCancellationTokenSource.Token);
     }
 
-    public void Disconnect(WebSocket socket)
+    private async Task Handle(WebSocket webSocket, CancellationToken cancellationToken)
     {
+        var buffer = new byte[1024 * 4];
         
+        WebSocketReceiveResult receiveResult;
+        
+        do
+        {
+            receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+        } while (!cancellationToken.IsCancellationRequested && !receiveResult.CloseStatus.HasValue);
+    }
+
+    public void Disconnect(WebSocket webSocket)
+    {
+        webSocket.RemoveData();
     }
 }
