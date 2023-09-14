@@ -44,6 +44,7 @@ reader.ReadEndArray();
 ```
 > Authenticate
 > <string:SecretKey>
+> <string:ClientName>
 ```
 
 认证成功：
@@ -58,5 +59,5 @@ reader.ReadEndArray();
 <! Close
 ```
 
-#### 注册接收器
+#### 注册频道
 

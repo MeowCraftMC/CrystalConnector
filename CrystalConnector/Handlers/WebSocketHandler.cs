@@ -29,10 +29,12 @@ public class WebSocketHandler
             if (!webSocket.GetConnectionInfo().Authenticated)
             {
                 var secret = reader.ReadTextString();
+                var name = reader.ReadTextString();
                 if (secret == Config.GetSecretKey())
                 {
-                    Logger.LogInformation("Client {Id} authorized", webSocket.GetConnectionInfo().Id);
+                    Logger.LogInformation("Client {Name}({Id}) authorized", name, webSocket.GetConnectionInfo().Id);
                     webSocket.GetConnectionInfo().Authenticated = true;
+                    webSocket.GetConnectionInfo().Name = name;
                     await webSocket.Send(new S2CAuthenticatedPacket().Write);
                 }
                 else
