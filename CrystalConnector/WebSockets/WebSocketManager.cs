@@ -1,10 +1,10 @@
 ﻿using System.Formats.Cbor;
 using System.Net;
 using System.Net.WebSockets;
+using CrystalConnector.Configs;
 using CrystalConnector.Handlers;
 using CrystalConnector.Utilities;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace CrystalConnector.WebSockets;
@@ -13,11 +13,11 @@ public class WebSocketManager : IWebSocketManager
 {
     private ILogger<WebSocketManager> Logger { get; }
     
-    private IConfiguration Config { get; }
+    private ConfigAccessor Config { get; }
 
     private WebSocketHandler Handler { get; }
 
-    public WebSocketManager(ILogger<WebSocketManager> logger, IConfiguration config, WebSocketHandler handler)
+    public WebSocketManager(ILogger<WebSocketManager> logger, ConfigAccessor config, WebSocketHandler handler)
     {
         Logger = logger;
         Config = config;
@@ -42,20 +42,19 @@ public class WebSocketManager : IWebSocketManager
 
             try
             {
-                Handler.Handle(webSocket, reader);
+                await Handler.Handle(webSocket, reader);
             }
             catch (CborContentException ex)
             {
-                if (Config.GetValue<bool>("Connector:Debug"))
+                if (Config.IsDebug())
                 {
                     Logger.LogWarning(ex, "Malformed message!");
                 }
-                
                 Disconnect(webSocket);
             }
             catch (InvalidOperationException ex)
             {
-                if (Config.GetValue<bool>("Connector:Debug"))
+                if (Config.IsDebug())
                 {
                     Logger.LogWarning(ex, "Bad message!");
                 }

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Formats.Cbor;
+using System.Net;
 using System.Net.WebSockets;
 using CrystalConnector.Connector;
 
@@ -30,6 +31,15 @@ public static class WebSocketExtension
         webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         
         WebSocketConnectionManager.Info.Remove(webSocket);
+    }
+
+    public static async Task Send(this WebSocket webSocket, Action<CborWriter> write)
+    {
+        var writer = new CborWriter();
+        writer.WriteStartArray(null);
+        write(writer);
+        writer.WriteEndArray();
+        await webSocket.Send(writer.Encode());
     }
 
     public static async Task Send(this WebSocket webSocket, byte[] data)

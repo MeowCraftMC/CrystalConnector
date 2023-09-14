@@ -11,7 +11,9 @@ public class WebSocketConnectionInfo
     
     public required TaskCompletionSource<WebSocketHandleResult> CompletionSource { get; set; }
 
-    public bool Authorized { get; set; } = false;
+    public string? Name { get; set; }
+    
+    public bool Authenticated { get; set; } = false;
 
     public List<MessageChannel> RegisteredChannels { get; } = new();
 }

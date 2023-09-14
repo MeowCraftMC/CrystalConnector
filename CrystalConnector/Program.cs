@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using CrystalConnector;
+using CrystalConnector.Configs;
 using CrystalConnector.Handlers;
 using CrystalConnector.WebSockets;
 using Microsoft.AspNetCore.Hosting;
@@ -95,4 +96,5 @@ void ConfigureServices(IServiceCollection services)
 {
     services.AddSingleton<IWebSocketManager, WebSocketManager>();
     services.AddSingleton<WebSocketHandler>();
+    services.AddSingleton<ConfigAccessor>();
 }

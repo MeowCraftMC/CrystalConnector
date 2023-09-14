@@ -1,37 +1,39 @@
 ﻿using System.Formats.Cbor;
 using System.Net.WebSockets;
+using CrystalConnector.Configs;
+using CrystalConnector.Connector.Packet;
 using CrystalConnector.Utilities;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace CrystalConnector.Handlers;
 
 public class WebSocketHandler
 {
-    private IConfiguration Config { get; }
+    private ConfigAccessor Config { get; }
 
     private ILogger<WebSocketHandler> Logger { get; }
     
-    public WebSocketHandler(IConfiguration config, ILogger<WebSocketHandler> logger)
+    public WebSocketHandler(ConfigAccessor config, ILogger<WebSocketHandler> logger)
     {
         Config = config;
         Logger = logger;
     }
     
-    public void Handle(WebSocket webSocket, CborReader reader)
+    public async Task Handle(WebSocket webSocket, CborReader reader)
     {
         reader.ReadStartArray();
         
         var type = reader.ReadTextString();
-        if (type == HandlerConstants.MessageTypeAuthenticate)
+        if (type == HandlerConstants.OperationAuthenticate)
         {
-            if (!webSocket.GetConnectionInfo().Authorized)
+            if (!webSocket.GetConnectionInfo().Authenticated)
             {
                 var secret = reader.ReadTextString();
-                if (secret == Config.GetValue<string>("Connector:Auth:Secret"))
+                if (secret == Config.GetSecretKey())
                 {
                     Logger.LogInformation("Client {Id} authorized", webSocket.GetConnectionInfo().Id);
-                    webSocket.GetConnectionInfo().Authorized = true;
+                    webSocket.GetConnectionInfo().Authenticated = true;
+                    await webSocket.Send(new S2CAuthenticatedPacket().Write);
                 }
                 else
                 {
