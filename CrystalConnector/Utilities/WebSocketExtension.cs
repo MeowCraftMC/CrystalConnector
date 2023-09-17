@@ -30,8 +30,8 @@ public static class WebSocketExtension
         info.CompletionSource.SetResult(WebSocketHandleResult.Successful);
 
         webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-        
-        WebSocketConnectionManager.Info.Remove(webSocket);
+
+        Purge(webSocket);
     }
 
     public static async Task Send(this WebSocket webSocket, PacketS2C packet)
@@ -49,5 +49,10 @@ public static class WebSocketExtension
     public static async Task Send(this WebSocket webSocket, byte[] data, int startIndex, int length)
     {
         await webSocket.SendAsync(new ReadOnlyMemory<byte>(data, startIndex, length), WebSocketMessageType.Binary, true, CancellationToken.None);
+    }
+
+    public static void Purge(this WebSocket webSocket)
+    {
+        WebSocketConnectionManager.Info.Remove(webSocket);
     }
 }

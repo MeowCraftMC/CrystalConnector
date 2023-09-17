@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.WebSockets;
 using CrystalConnector.Configs;
+using CrystalConnector.Connector.Packet.S2C;
 using CrystalConnector.Handlers;
 using CrystalConnector.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -49,26 +50,30 @@ public class WebSocketManager : IWebSocketManager
             {
                 if (Config.IsDebug())
                 {
-                    Logger.LogWarning(ex, "Malformed message!");
+                    Logger.LogWarning(ex, "Unknown message!");
                 }
-                Disconnect(webSocket);
+
+                await webSocket.Send(new S2CUnknownPacket());
             }
             catch (InvalidOperationException ex)
             {
                 if (Config.IsDebug())
                 {
-                    Logger.LogWarning(ex, "Bad message!");
+                    Logger.LogWarning(ex, "Malformed message!");
                 }
-                Disconnect(webSocket);
+                
+                await webSocket.Send(new S2CMalformedPacket());
             }
             catch (MessageException ex)
             {
                 Logger.LogWarning(ex, "Why do that?");
-                Disconnect(webSocket);
+                await webSocket.Send(new S2CMalformedPacket());
             }
             
             receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
         }
+
+        webSocket.Purge();
     }
 
     public void Disconnect(WebSocket webSocket)

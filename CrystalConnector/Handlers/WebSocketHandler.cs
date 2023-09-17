@@ -67,12 +67,21 @@ public class WebSocketHandler
             }
             
             var direction = (MessageDirection)directionValue;
-                
-            webSocket.GetConnectionInfo().RegisteredChannels.Add(channelId, new MessageChannel
+
+            var channels = webSocket.GetConnectionInfo().RegisteredChannels;
+            if (channelId.Contains(channelId))
             {
-                Id = channelId,
-                Direction = direction
-            });
+                channels[channelId].Direction |= direction;
+            }
+            else
+            {
+                webSocket.GetConnectionInfo().RegisteredChannels.Add(channelId, new MessageChannel
+                {
+                    Id = channelId,
+                    Direction = direction
+                });
+            }
+            
             Logger.LogInformation("Client {Name}({Id}) registered channel {Channel}(Direction: {Direction})", 
                 webSocket.GetConnectionInfo().Name, webSocket.GetConnectionInfo().Id, channelId, direction.ToString());
             return new S2CSuccessfulPacket();
