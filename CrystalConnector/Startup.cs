@@ -40,6 +40,7 @@ public class Startup
 
                 var taskCompletionSource = new TaskCompletionSource<WebSocketHandleResult>();
                 await WebSocketManager.StartHandle(context, websocket, taskCompletionSource);
+                websocket.Purge();
             }
             else
             {
