@@ -67,7 +67,7 @@ reader.ReadEndArray();
 | Malformed             | 客户端发给服务端的信息是 CBOR 数据包，但无法按协议规则解析时，产生此错误。 |
 | Authenticated         | 当已认证客户端再次申请认证时，产生此错误。                   |
 | NameAuthenticated     | 当某个客户端尝试以一个已认证的客户端身份进行认证时，产生此错误。 |
-| Unauthenticated       | 当未认证客户端执行除认证外的其他操作时，产生此错误。         |
+| Unauthenticated       | 当客户端认证失败或者未经认证的客户端执行除认证外的其他操作时，产生此错误。 |
 | UndefinedDirection    | 当客户端尝试注册的频道信息方向超过了信息方向枚举允许的值时，产生此错误。 |
 | UnregisteredDirection | 当客户端未注册外发某个频道的信息，却想要发布对应频道信息时，产生此错误。 |
 
