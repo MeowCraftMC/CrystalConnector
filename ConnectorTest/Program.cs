@@ -24,7 +24,9 @@ async Task Receive()
     while (!result.CloseStatus.HasValue)
     {
         var reader = new CborReader(new ReadOnlyMemory<byte>(buffer, 0, result.Count));
-        Console.WriteLine(reader.BytesRemaining);
+        Console.WriteLine("Response length: " + reader.BytesRemaining);
+        reader.ReadStartArray();
+        Console.WriteLine("Result: " + reader.ReadTextString());
         
         result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
     }
@@ -44,7 +46,7 @@ async Task Process()
     {
         var uri = Console.ReadLine();
         await webSocket.ConnectAsync(new Uri(uri!), CancellationToken.None);
-        Receive();
+        new Thread(() => Receive()).Start();
     }
     else if (operation == "message")
     {
@@ -79,6 +81,11 @@ async Task Process()
         if (type == "string")
         {
             cborWriter.WriteTextString(valueStr!);
+        }
+        else if (type == "byte")
+        {
+            var bytes = Convert.FromBase64String(valueStr);
+            cborWriter.WriteByteString(bytes);
         }
         else if (type == "int")
         {

@@ -36,7 +36,7 @@ public class Startup
             if (context.WebSockets.IsWebSocketRequest)
             {
                 var websocket = await context.WebSockets.AcceptWebSocketAsync();
-                Logger.LogInformation("Got WebSocket connection from {Ip}:{Port}", context.Connection.RemoteIpAddress?.ToString(), context.Connection.RemotePort);
+                Logger.LogInformation("Got WebSocket connection from {Ip}:{Port}({Id})", context.Connection.RemoteIpAddress?.ToString(), context.Connection.RemotePort, context.Connection.Id);
 
                 var taskCompletionSource = new TaskCompletionSource<WebSocketHandleResult>();
                 await WebSocketManager.StartHandle(context, websocket, taskCompletionSource);

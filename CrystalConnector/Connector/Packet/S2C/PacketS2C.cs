@@ -6,9 +6,9 @@ public abstract class PacketS2C : IPacket
 {
     public void Write(CborWriter writer)
     {
-        writer.WriteStartMap(null);
+        writer.WriteStartArray(null);
         WriteData(writer);
-        writer.WriteEndMap();
+        writer.WriteEndArray();
     }
 
     protected abstract void WriteData(CborWriter writer);

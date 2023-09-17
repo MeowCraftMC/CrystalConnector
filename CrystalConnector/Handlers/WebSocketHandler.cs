@@ -35,6 +35,12 @@ public class WebSocketHandler
                 var name = reader.ReadTextString();
                 if (secret == Config.GetSecretKey())
                 {
+                    if (WebSocketConnectionManager.HaveNameRegistered(name))
+                    {
+                        Logger.LogInformation("Client {Id} tried authorize with name {Name}, but it is already authorized!", webSocket.GetConnectionInfo().Id, name);
+                        return new S2CNameAuthenticatedPacket();
+                    }
+                    
                     Logger.LogInformation("Client {Name}({Id}) authorized", name, webSocket.GetConnectionInfo().Id);
                     webSocket.GetConnectionInfo().Authenticated = true;
                     webSocket.GetConnectionInfo().Name = name;
@@ -69,9 +75,9 @@ public class WebSocketHandler
             var direction = (MessageDirection)directionValue;
 
             var channels = webSocket.GetConnectionInfo().RegisteredChannels;
-            if (channelId.Contains(channelId))
+            if (channels.TryGetValue(channelId, out var channel))
             {
-                channels[channelId].Direction |= direction;
+                channel.Direction |= direction;
             }
             else
             {
@@ -89,26 +95,26 @@ public class WebSocketHandler
 
         if (type == HandlerConstants.OperationPublish)
         {
-            var origin = reader.ReadTextString();
             var channelId = reader.ReadTextString();
-            var payload = reader.ReadEncodedValue();
+            var payload = reader.ReadByteString();
 
             if (!webSocket.GetConnectionInfo().RegisteredChannels.TryGetValue(channelId, out var value)
                 || !value.Direction.HasFlag(MessageDirection.Outgoing))
             {
-                Logger.LogError("Channel {Channel}(Direction: {Direction}) have not been registered by Client {Name}({Id})", 
+                Logger.LogWarning("Channel {Channel}(Direction: {Direction}) have not been registered by Client {Name}({Id})", 
                     channelId, MessageDirection.Outgoing, webSocket.GetConnectionInfo().Name, webSocket.GetConnectionInfo().Id);
                 return new S2CUnregisteredDirectionPacket();
             }
 
             try
             {
-                await WebSocketConnectionManager.Broadcast(origin, channelId, payload.ToArray());
+                var name = webSocket.GetConnectionInfo().Name;
+                await WebSocketConnectionManager.Broadcast(name!, channelId, payload);
 
                 if (Config.IsDebug())
                 {
                     Logger.LogDebug("Client {Name}({Id}) send data in {Channel}: {Data}", 
-                        origin, webSocket.GetConnectionInfo().Id, channelId, Convert.ToBase64String(payload.Span));
+                        name, webSocket.GetConnectionInfo().Id, channelId, Convert.ToBase64String(payload));
                     return new S2CSuccessfulPacket();
                 }
             }

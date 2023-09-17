@@ -69,11 +69,19 @@ public class WebSocketManager : IWebSocketManager
                 Logger.LogWarning(ex, "Why do that?");
                 await webSocket.Send(new S2CMalformedPacket());
             }
-            
-            receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-        }
 
-        webSocket.Purge();
+            try
+            {
+                receiveResult = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogInformation("Client {Name}({Id}) disconnected!", 
+                    webSocket.GetConnectionInfo().Name, webSocket.GetConnectionInfo().Id);
+                webSocket.Purge();
+                break;
+            }
+        }
     }
 
     public void Disconnect(WebSocket webSocket)

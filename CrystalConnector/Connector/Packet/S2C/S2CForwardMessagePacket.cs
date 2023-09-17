@@ -1,4 +1,5 @@
 ﻿using System.Formats.Cbor;
+using CrystalConnector.Handlers;
 
 namespace CrystalConnector.Connector.Packet.S2C;
 
@@ -17,8 +18,9 @@ public class S2CForwardMessagePacket : PacketS2C
     
     protected override void WriteData(CborWriter writer)
     {
+        writer.WriteTextString(HandlerConstants.ResponseForward);
         writer.WriteTextString(Origin);
         writer.WriteTextString(ChannelId);
-        writer.WriteEncodedValue(Payload);
+        writer.WriteByteString(Payload);
     }
 }

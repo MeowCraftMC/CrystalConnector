@@ -9,10 +9,12 @@ public class HandlerConstants
     // public static readonly string OperationExit = "Bye";
     
     public static readonly string ResponseSuccessful = "Successful";
+    public static readonly string ResponseForward = "Forward";
     
     public static readonly string ResponseErrorUnknownPacket = "Unknown";
     public static readonly string ResponseErrorMalformed = "Malformed";
     public static readonly string ResponseErrorAuthenticated = "Authenticated";
+    public static readonly string ResponseErrorNameAuthenticated = "NameAuthenticated";
     public static readonly string ResponseErrorUnauthenticated = "Unauthenticated";
     public static readonly string ResponseErrorUndefinedDirection = "UndefinedDirection";
     public static readonly string ResponseErrorUnregisteredDirection = "UnregisteredDirection";

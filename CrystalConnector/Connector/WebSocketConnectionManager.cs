@@ -8,6 +8,19 @@ public class WebSocketConnectionManager
 {
     internal static Dictionary<WebSocket, WebSocketConnectionInfo> Info { get; } = new();
 
+    public static bool HaveNameRegistered(string name)
+    {
+        foreach (var (webSocket, info) in Info)
+        {
+            if (info.Name == name)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     public static void DisconnectAll()
     {
         foreach (var (webSocket, info) in Info)
@@ -23,8 +36,15 @@ public class WebSocketConnectionManager
         foreach (var (webSocket, info) in Info)
         {
             if (info.RegisteredChannels.TryGetValue(channelId, out var value) 
-                && value.Direction.HasFlag(MessageDirection.Incoming))
+                && value.Direction.HasFlag(MessageDirection.Incoming) 
+                && info.Name != origin)
             {
+                if (webSocket.State != WebSocketState.Open)
+                {
+                    webSocket.Purge();
+                    continue;
+                }
+                
                 await webSocket.Send(packet);
             }
         }
