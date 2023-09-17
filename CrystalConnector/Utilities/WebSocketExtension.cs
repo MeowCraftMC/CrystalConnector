@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.WebSockets;
 using CrystalConnector.Connector;
+using CrystalConnector.Connector.Packet.S2C;
 
 namespace CrystalConnector.Utilities;
 
@@ -33,12 +34,10 @@ public static class WebSocketExtension
         WebSocketConnectionManager.Info.Remove(webSocket);
     }
 
-    public static async Task Send(this WebSocket webSocket, Action<CborWriter> write)
+    public static async Task Send(this WebSocket webSocket, PacketS2C packet)
     {
         var writer = new CborWriter();
-        writer.WriteStartArray(null);
-        write(writer);
-        writer.WriteEndArray();
+        packet.Write(writer);
         await webSocket.Send(writer.Encode());
     }
 

@@ -15,5 +15,5 @@ public class WebSocketConnectionInfo
     
     public bool Authenticated { get; set; } = false;
 
-    public List<MessageChannel> RegisteredChannels { get; } = new();
+    public Dictionary<string, MessageChannel> RegisteredChannels { get; } = new();
 }

@@ -13,7 +13,13 @@ public class ConfigAccessor
 
     public bool IsDebug()
     {
-        return Config.GetValue<bool>("Connector:Debug");
+        return HasDevEnvironmentVariable() || Config.GetValue<bool>("Connector:Debug");
+    }
+
+    private bool HasDevEnvironmentVariable()
+    {
+        var dev = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        return dev != null && dev.Equals("Development", StringComparison.OrdinalIgnoreCase);
     }
 
     public string GetSecretKey()

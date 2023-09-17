@@ -42,7 +42,8 @@ public class WebSocketManager : IWebSocketManager
 
             try
             {
-                await Handler.Handle(webSocket, reader);
+                var resultPacket = await Handler.Handle(webSocket, reader);
+                await webSocket.Send(resultPacket);
             }
             catch (CborContentException ex)
             {

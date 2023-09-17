@@ -1,7 +1,9 @@
 ﻿using System.Formats.Cbor;
 using System.Net.WebSockets;
 using CrystalConnector.Configs;
+using CrystalConnector.Connector;
 using CrystalConnector.Connector.Packet;
+using CrystalConnector.Connector.Packet.S2C;
 using CrystalConnector.Utilities;
 using Microsoft.Extensions.Logging;
 
@@ -19,10 +21,11 @@ public class WebSocketHandler
         Logger = logger;
     }
     
-    public async Task Handle(WebSocket webSocket, CborReader reader)
+    public async Task<PacketS2C> Handle(WebSocket webSocket, CborReader reader)
     {
         reader.ReadStartArray();
         
+        // Todo: qyl27: Use C2SPacketReader.
         var type = reader.ReadTextString();
         if (type == HandlerConstants.OperationAuthenticate)
         {
@@ -35,23 +38,79 @@ public class WebSocketHandler
                     Logger.LogInformation("Client {Name}({Id}) authorized", name, webSocket.GetConnectionInfo().Id);
                     webSocket.GetConnectionInfo().Authenticated = true;
                     webSocket.GetConnectionInfo().Name = name;
-                    await webSocket.Send(new S2CAuthenticatedPacket().Write);
+                    return new S2CSuccessfulPacket();
                 }
-                else
-                {
-                    throw new MessageException("Auth failed!");
-                }
+
+                Logger.LogWarning("Client {Name}({Id}) auth failed with wrong key!", name, webSocket.GetConnectionInfo().Id);
+                return new S2CUnauthenticatedPacket();
             }
-            else
-            {
-                throw new MessageException("You are already authorized.");
-            }
+
+            return new S2CAuthenticatedPacket();
         }
-        else if (type == "")
+
+        if (type == HandlerConstants.OperationRegisterChannel)
         {
+            if (!webSocket.GetConnectionInfo().Authenticated)
+            {
+                Logger.LogWarning("Client {Id} is unauthenticated!", webSocket.GetConnectionInfo().Id);
+                return new S2CUnauthenticatedPacket();
+            }
+
+            var channelId = reader.ReadTextString();
+            var directionValue = reader.ReadInt32();
+
+            if (!Enum.IsDefined(typeof(MessageDirection), directionValue))
+            {
+                Logger.LogWarning("Client {Name}({Id}) tried to register channel {Channel} with undefined direction {Direction}!", 
+                    webSocket.GetConnectionInfo().Name, webSocket.GetConnectionInfo().Id, channelId, directionValue);
+                return new S2CUndefinedDirectionPacket();
+            }
             
+            var direction = (MessageDirection)directionValue;
+                
+            webSocket.GetConnectionInfo().RegisteredChannels.Add(channelId, new MessageChannel
+            {
+                Id = channelId,
+                Direction = direction
+            });
+            Logger.LogInformation("Client {Name}({Id}) registered channel {Channel}(Direction: {Direction})", 
+                webSocket.GetConnectionInfo().Name, webSocket.GetConnectionInfo().Id, channelId, direction.ToString());
+            return new S2CSuccessfulPacket();
         }
-        
+
+        if (type == HandlerConstants.OperationPublish)
+        {
+            var origin = reader.ReadTextString();
+            var channelId = reader.ReadTextString();
+            var payload = reader.ReadEncodedValue();
+
+            if (!webSocket.GetConnectionInfo().RegisteredChannels.TryGetValue(channelId, out var value)
+                || !value.Direction.HasFlag(MessageDirection.Outgoing))
+            {
+                Logger.LogError("Channel {Channel}(Direction: {Direction}) have not been registered by Client {Name}({Id})", 
+                    channelId, MessageDirection.Outgoing, webSocket.GetConnectionInfo().Name, webSocket.GetConnectionInfo().Id);
+                return new S2CUnregisteredDirectionPacket();
+            }
+
+            try
+            {
+                await WebSocketConnectionManager.Broadcast(origin, channelId, payload.ToArray());
+
+                if (Config.IsDebug())
+                {
+                    Logger.LogDebug("Client {Name}({Id}) send data in {Channel}: {Data}", 
+                        origin, webSocket.GetConnectionInfo().Id, channelId, Convert.ToBase64String(payload.Span));
+                    return new S2CSuccessfulPacket();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Send error!");
+            }
+        }
+
         reader.ReadEndArray();
+        
+        return new S2CUnknownPacket();
     }
 }
