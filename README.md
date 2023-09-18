@@ -5,7 +5,7 @@
 
 ## 传输协议
 
-版本：**V1.0（2023.9.17）**
+版本：**V1.0.1（2023.9.18 更新）**
 
 水晶互联采用 WebSocket 进行消息传输，使用 CBOR 进行消息编码。
 
@@ -86,6 +86,10 @@ enum MessageDirection {
 }
 ```
 
+`Incoming` 代表服务端向客户端转发的信息，`Outgoing` 代表客户端向服务端发布的信息，`All` 代表双向通信。
+
+注意：**在 WebSocket 传输过程中，枚举值使用对应的 Int 值进行传输。**
+
 
 
 ##### ID 字符串（IdString）
@@ -149,7 +153,7 @@ ChannelName 是自定义的频道名。
 ```
 > Register
 > <ChannelId:ChannelId>
-> <int32:EnumDirection>
+> <int32:MessageDirection>
 ```
 
 
