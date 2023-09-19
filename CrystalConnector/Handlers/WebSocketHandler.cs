@@ -115,8 +115,8 @@ public class WebSocketHandler
                 {
                     Logger.LogDebug("Client {Name}({Id}) send data in {Channel}: {Data}", 
                         name, webSocket.GetConnectionInfo().Id, channelId, Convert.ToBase64String(payload));
-                    return new S2CSuccessfulPacket();
                 }
+                return new S2CSuccessfulPacket();
             }
             catch (Exception ex)
             {
