@@ -9,8 +9,12 @@
     
     <ItemGroup>
       <PackageReference Include="Nakov.IO.Cin" Version="2.0.2.1" />
-      <PackageReference Include="System.Formats.Cbor" Version="8.0.0-rc.1.23419.4" />
+      <PackageReference Include="System.Formats.Cbor" Version="8.0.0" />
       <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.2" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\CrystalConnector.Protocol\CrystalConnector.Protocol.csproj" />
     </ItemGroup>
 
 </Project>
