@@ -21,6 +21,19 @@ Proto 文件见 `CrystalConnector.Protocol/proto` 目录。
 
 
 
+#### 服务端响应
+
+```protobuf
+message Result {
+  oneof result {
+    Successful successful = 1;
+    Error error = 2;
+  }
+}
+```
+
+
+
 #### 操作失败原因列表
 
 目前已定义的原因列表如下：

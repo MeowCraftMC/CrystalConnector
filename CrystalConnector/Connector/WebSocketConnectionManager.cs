@@ -1,5 +1,5 @@
 ﻿using System.Net.WebSockets;
-using CrystalConnector.Connector.Packet.S2C;
+using CrystalConnector.Protocol.Packet.S2C;
 using CrystalConnector.Utilities;
 
 namespace CrystalConnector.Connector;
@@ -29,13 +29,13 @@ public class WebSocketConnectionManager
         }
     }
 
-    public static async Task Broadcast(string origin, string channelId, byte[] payload, bool allowUnauthenticated = false)
+    public static async Task Broadcast(string origin, (string Namespace, string Name) channel, string payload, bool allowUnauthenticated = false)
     {
-        var packet = new S2CForwardMessagePacket(origin, channelId, payload);
+        var packet = new ForwardPacket(origin, channel, payload);
         
         foreach (var (webSocket, info) in Info)
         {
-            if (info.RegisteredChannels.TryGetValue(channelId, out var value) 
+            if (info.RegisteredChannels.TryGetValue(channel, out var value) 
                 && value.Direction.HasFlag(MessageDirection.Incoming) 
                 && info.Name != origin)
             {
@@ -45,7 +45,7 @@ public class WebSocketConnectionManager
                     continue;
                 }
                 
-                await webSocket.Send(packet);
+                await webSocket.Send(packet.Write());
             }
         }
     }

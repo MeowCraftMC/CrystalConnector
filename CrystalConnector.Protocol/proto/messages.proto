@@ -15,15 +15,7 @@ enum MessageDirection {
   ALL = 3;
 }
 
-message Result {
-  oneof result {
-    Successful successful = 1;
-    Error error = 2;
-  }
-}
-
 message Successful {
-
 }
 
 enum Error {
@@ -34,6 +26,12 @@ enum Error {
   UNREGISTERED_CHANNEL = 4;
 }
 
+message Result {
+  oneof result {
+    Successful successful = 1;
+    Error error = 2;
+  }
+}
 
 message Authenticate {
   NamespacedName client_id = 1;

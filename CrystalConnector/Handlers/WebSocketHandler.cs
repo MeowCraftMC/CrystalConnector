@@ -1,9 +1,9 @@
-﻿using System.Formats.Cbor;
-using System.Net.WebSockets;
+﻿using System.Net.WebSockets;
 using CrystalConnector.Configs;
 using CrystalConnector.Connector;
-using CrystalConnector.Connector.Packet;
-using CrystalConnector.Connector.Packet.S2C;
+using CrystalConnector.Protocol.Packet;
+using CrystalConnector.Protocol.Packet.C2S;
+using CrystalConnector.Protocol.Packet.S2C;
 using CrystalConnector.Utilities;
 using Microsoft.Extensions.Logging;
 
@@ -21,11 +21,26 @@ public class WebSocketHandler
         Logger = logger;
     }
     
-    public async Task<PacketS2C> Handle(WebSocket webSocket, CborReader reader)
+    public async Task<IPacket> Handle(WebSocket webSocket, byte[] data)
     {
-        reader.ReadStartArray();
+        var packet = IPacket.From(data);
+        switch (packet)
+        {
+            // Todo
+            case AuthenticatePacket authenticatePacket:
+                
+                break;
+            case PublishPacket publishPacket:
+                
+                break;
+            case ForwardPacket forwardPacket:
+                
+                break;
+            case ResultPacket resultPacket:
+                
+                break;
+        }
         
-        // Todo: qyl27: Use C2SPacketReader.
         var type = reader.ReadTextString();
         if (type == HandlerConstants.OperationAuthenticate)
         {
