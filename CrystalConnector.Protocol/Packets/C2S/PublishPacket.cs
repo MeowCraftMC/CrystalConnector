@@ -1,7 +1,7 @@
 ﻿using CrystalConnector.Protocol.Messages;
 using Google.Protobuf;
 
-namespace CrystalConnector.Protocol.Packet.C2S;
+namespace CrystalConnector.Protocol.Packets.C2S;
 
 public class PublishPacket : IPacket
 {

@@ -1,8 +1,7 @@
 ﻿using CrystalConnector.Protocol.Messages;
 using Google.Protobuf;
-using Google.Protobuf.Collections;
 
-namespace CrystalConnector.Protocol.Packet.C2S;
+namespace CrystalConnector.Protocol.Packets.C2S;
 
 public class AuthenticatePacket : IPacket
 {

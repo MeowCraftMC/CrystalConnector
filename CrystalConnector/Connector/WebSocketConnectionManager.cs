@@ -1,5 +1,6 @@
 ﻿using System.Net.WebSockets;
-using CrystalConnector.Protocol.Packet.S2C;
+using CrystalConnector.Protocol.Messages;
+using CrystalConnector.Protocol.Packets.S2C;
 using CrystalConnector.Utilities;
 
 namespace CrystalConnector.Connector;
@@ -8,11 +9,11 @@ public class WebSocketConnectionManager
 {
     internal static Dictionary<WebSocket, WebSocketConnectionInfo> Info { get; } = new();
 
-    public static bool HaveNameRegistered(string name)
+    public static bool HaveClientRegistered((string Namespace, string Name) client)
     {
-        foreach (var (webSocket, info) in Info)
+        foreach (var (_, info) in Info)
         {
-            if (info.Name == name)
+            if (info.ClientId == client)
             {
                 return true;
             }
@@ -23,7 +24,7 @@ public class WebSocketConnectionManager
 
     public static void DisconnectAll()
     {
-        foreach (var (webSocket, info) in Info)
+        foreach (var (webSocket, _) in Info)
         {
             webSocket.Disconnect();
         }
@@ -36,8 +37,7 @@ public class WebSocketConnectionManager
         foreach (var (webSocket, info) in Info)
         {
             if (info.RegisteredChannels.TryGetValue(channel, out var value) 
-                && value.Direction.HasFlag(MessageDirection.Incoming) 
-                && info.Name != origin)
+                && value.Direction is MessageDirection.Incoming or MessageDirection.All)
             {
                 if (webSocket.State != WebSocketState.Open)
                 {

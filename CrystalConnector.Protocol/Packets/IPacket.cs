@@ -1,8 +1,8 @@
-﻿using CrystalConnector.Protocol.Packet.C2S;
-using CrystalConnector.Protocol.Packet.S2C;
+﻿using CrystalConnector.Protocol.Packets.C2S;
+using CrystalConnector.Protocol.Packets.S2C;
 using Google.Protobuf;
 
-namespace CrystalConnector.Protocol.Packet;
+namespace CrystalConnector.Protocol.Packets;
 
 public interface IPacket
 {

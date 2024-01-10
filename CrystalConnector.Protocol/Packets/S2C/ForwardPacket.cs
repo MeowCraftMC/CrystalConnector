@@ -1,7 +1,7 @@
 ﻿using CrystalConnector.Protocol.Messages;
 using Google.Protobuf;
 
-namespace CrystalConnector.Protocol.Packet.S2C;
+namespace CrystalConnector.Protocol.Packets.S2C;
 
 public class ForwardPacket : IPacket
 {

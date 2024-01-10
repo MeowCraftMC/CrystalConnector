@@ -24,6 +24,7 @@ enum Error {
   NAME_EXISTS = 2;
   UNAUTHENTICATED = 3;
   UNREGISTERED_CHANNEL = 4;
+  INTERNAL = 5;
 }
 
 message Result {

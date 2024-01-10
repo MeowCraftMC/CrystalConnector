@@ -1,9 +1,9 @@
-﻿using System.Formats.Cbor;
-using System.Net;
+﻿using System.Net;
 using System.Net.WebSockets;
 using CrystalConnector.Configs;
-using CrystalConnector.Connector.Packet.S2C;
 using CrystalConnector.Handlers;
+using CrystalConnector.Protocol.Messages;
+using CrystalConnector.Protocol.Packets.S2C;
 using CrystalConnector.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -39,35 +39,21 @@ public class WebSocketManager : IWebSocketManager
 
         while (!receiveResult.CloseStatus.HasValue)
         {
-            var reader = new CborReader(new ReadOnlyMemory<byte>(buffer, 0, receiveResult.Count));
+            var bytes = new ReadOnlyMemory<byte>(buffer, 0, receiveResult.Count);
 
             try
             {
-                var resultPacket = await Handler.Handle(webSocket, reader);
+                var resultPacket = await Handler.Handle(webSocket, bytes.ToArray());
                 await webSocket.Send(resultPacket);
             }
-            catch (CborContentException ex)
-            {
-                if (Config.IsDebug())
-                {
-                    Logger.LogWarning(ex, "Unknown message!");
-                }
-
-                await webSocket.Send(new S2CUnknownPacket());
-            }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
                 if (Config.IsDebug())
                 {
                     Logger.LogWarning(ex, "Malformed message!");
                 }
                 
-                await webSocket.Send(new S2CMalformedPacket());
-            }
-            catch (MessageException ex)
-            {
-                Logger.LogWarning(ex, "Why do that?");
-                await webSocket.Send(new S2CMalformedPacket());
+                await webSocket.Send(new ResultPacket(Error.Internal));
             }
 
             try
