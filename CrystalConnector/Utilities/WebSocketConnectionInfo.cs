@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using CrystalConnector.Connector;
+using CrystalConnector.Protocol.Entities;
 
 namespace CrystalConnector.Utilities;
 
@@ -13,9 +14,9 @@ public class WebSocketConnectionInfo
 
     public string? Name { get; set; }
     
-    public (string Namespace, string Name)? ClientId { get; set; }
+    public NamespacedId? ClientId { get; set; }
     
     public bool Authenticated { get; set; } = false;
 
-    public Dictionary<(string Namespace, string Name), MessageChannel> RegisteredChannels { get; } = new();
+    public Dictionary<NamespacedId, MessageChannel> RegisteredChannels { get; } = new();
 }

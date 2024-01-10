@@ -1,14 +1,16 @@
-﻿using CrystalConnector.Protocol.Messages;
+﻿using CrystalConnector.Protocol.Entities;
+using CrystalConnector.Protocol.Messages;
+using CrystalConnector.Protocol.Utilities;
 using Google.Protobuf;
 
 namespace CrystalConnector.Protocol.Packets.C2S;
 
 public class PublishPacket : IPacket
 {
-    public NamespacedName Channel { get; set; }
+    public NamespacedId Channel { get; set; }
     public string Payload { get; set; }
     
-    public PublishPacket(NamespacedName channel, string payload)
+    public PublishPacket(NamespacedId channel, string payload)
     {
         Channel = channel;
         Payload = payload;
@@ -26,7 +28,7 @@ public class PublishPacket : IPacket
     public void Read(byte[] bytes)
     {
         var message = Publish.Parser.ParseFrom(bytes);
-        Channel = message.Channel;
+        Channel = message.Channel.ToId();
         Payload = message.Payload;
     }
 
@@ -34,7 +36,7 @@ public class PublishPacket : IPacket
     {
         var message = new Publish
         {
-            Channel = Channel,
+            Channel = Channel.ToName(),
             Payload = Payload
         };
 

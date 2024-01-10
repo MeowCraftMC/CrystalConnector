@@ -1,4 +1,5 @@
 ﻿using System.Net.WebSockets;
+using CrystalConnector.Protocol.Entities;
 using CrystalConnector.Protocol.Messages;
 using CrystalConnector.Protocol.Packets.S2C;
 using CrystalConnector.Utilities;
@@ -9,7 +10,7 @@ public class WebSocketConnectionManager
 {
     internal static Dictionary<WebSocket, WebSocketConnectionInfo> Info { get; } = new();
 
-    public static bool HaveClientRegistered((string Namespace, string Name) client)
+    public static bool HaveClientRegistered(NamespacedId client)
     {
         foreach (var (_, info) in Info)
         {
@@ -30,7 +31,7 @@ public class WebSocketConnectionManager
         }
     }
 
-    public static async Task Broadcast(string origin, (string Namespace, string Name) channel, string payload, bool allowUnauthenticated = false)
+    public static async Task Broadcast(string origin, NamespacedId channel, string payload, bool allowUnauthenticated = false)
     {
         var packet = new ForwardPacket(origin, channel, payload);
         

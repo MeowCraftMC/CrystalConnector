@@ -10,6 +10,7 @@
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <IncludeSymbols>True</IncludeSymbols>
     <PackageProjectUrl>https://github.com/MeowCraftMC/CrystalConnector</PackageProjectUrl>
+    <Version>1.0.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.25.1" />

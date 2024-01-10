@@ -30,17 +30,17 @@ public class WebSocketHandler
         {
             case AuthenticatePacket authenticatePacket:
             {
-                var clientId = (authenticatePacket.ClientId.Namespace, authenticatePacket.ClientId.Name);
+                var clientId = authenticatePacket.ClientId.ToId();
                 
                 if (authenticatePacket.Key == Config.GetSecretKey())
                 {
                     if (WebSocketConnectionManager.HaveClientRegistered(clientId))
                     {
-                        Logger.LogInformation("Client {Id} tried authorize with name {Name}, but it is already authorized!", clientId.ToIdString(), authenticatePacket.ClientName);
+                        Logger.LogInformation("Client {Id} tried authorize with name {Name}, but it is already authorized!", clientId, authenticatePacket.ClientName);
                         return new ResultPacket(Error.NameExists);
                     }
                     
-                    Logger.LogInformation("Client {Name}({Id}) authorized", authenticatePacket.ClientName, clientId.ToIdString());
+                    Logger.LogInformation("Client {Name}({Id}) authorized", authenticatePacket.ClientName, clientId);
 
                     var connectionInfo = webSocket.GetConnectionInfo();
                     
@@ -52,7 +52,7 @@ public class WebSocketHandler
 
                     foreach (var channel in authenticatePacket.Channels)
                     {
-                        var id = channel.Id.ToTuple();
+                        var id = channel.Id.ToId();
                         if (channels.TryGetValue(id, out var chan))
                         {
                             chan.Direction = channel.Direction;
@@ -70,13 +70,13 @@ public class WebSocketHandler
                     return new ResultPacket();
                 }
 
-                Logger.LogWarning("Client {Name}({Id}) auth failed with wrong key!", authenticatePacket.ClientName, clientId.ToIdString());
+                Logger.LogWarning("Client {Name}({Id}) auth failed with wrong key!", authenticatePacket.ClientName, clientId);
                 return new ResultPacket(Error.Unauthenticated);
             }
             case PublishPacket publishPacket:
             {
                 var connectionInfo = webSocket.GetConnectionInfo();
-                var id = publishPacket.Channel.ToTuple();
+                var id = publishPacket.Channel;
 
                 if (!connectionInfo.Authenticated)
                 {
@@ -88,7 +88,7 @@ public class WebSocketHandler
                     || registered.Direction == MessageDirection.All)
                 {
                     Logger.LogWarning("Channel {Channel}(Direction: {Direction}) have not been registered by Client {Name}({Id})", 
-                        id.ToIdString(), MessageDirection.Outgoing, webSocket.GetConnectionInfo().Name, webSocket.GetConnectionInfo().Id);
+                        id, MessageDirection.Outgoing, webSocket.GetConnectionInfo().Name, webSocket.GetConnectionInfo().Id);
                     return new ResultPacket(Error.UnregisteredChannel);
                 }
 
@@ -98,7 +98,7 @@ public class WebSocketHandler
                 if (Config.IsDebug())
                 {
                     Logger.LogDebug("Client {Name}({Id}) send data in {Channel}: {Data}", 
-                        name, webSocket.GetConnectionInfo().ClientId!.Value.ToIdString(), id.ToIdString(), publishPacket.Payload);
+                        name, webSocket.GetConnectionInfo().ClientId, id, publishPacket.Payload);
                 }
 
                 return new ResultPacket();
