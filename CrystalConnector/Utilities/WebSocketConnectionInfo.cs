@@ -13,7 +13,9 @@ public class WebSocketConnectionInfo
 
     public string? Name { get; set; }
     
+    public (string Namespace, string Name)? ClientId { get; set; }
+    
     public bool Authenticated { get; set; } = false;
 
-    public Dictionary<string, MessageChannel> RegisteredChannels { get; } = new();
+    public Dictionary<(string Namespace, string Name), MessageChannel> RegisteredChannels { get; } = new();
 }

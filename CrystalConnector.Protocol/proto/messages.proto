@@ -1,0 +1,59 @@
+﻿syntax = "proto3";
+option csharp_namespace = "CrystalConnector.Protocol.Messages";
+
+package CrystalConnector;
+
+message NamespacedName {
+  string namespace = 1;
+  string name = 2;
+}
+
+enum MessageDirection {
+  NONE = 0;
+  INCOMING = 1;
+  OUTGOING = 2;
+  ALL = 3;
+}
+
+message Successful {
+}
+
+enum Error {
+  UNKNOWN = 0;
+  AUTHENTICATED = 1;
+  NAME_EXISTS = 2;
+  UNAUTHENTICATED = 3;
+  UNREGISTERED_CHANNEL = 4;
+  INTERNAL = 5;
+}
+
+message Result {
+  oneof result {
+    Successful successful = 1;
+    Error error = 2;
+  }
+}
+
+message Authenticate {
+  NamespacedName client_id = 1;
+  string client_name = 2;
+  string secret_key = 3;
+  
+  repeated Channel channels = 4;
+}
+
+message Channel {
+  NamespacedName id = 1;
+  MessageDirection direction = 2;
+}
+
+message Publish {
+  NamespacedName channel = 1;
+  string payload = 2;
+}
+
+message Forward {
+  string publisher = 1;
+  NamespacedName channel = 2;
+  string payload = 3;
+}

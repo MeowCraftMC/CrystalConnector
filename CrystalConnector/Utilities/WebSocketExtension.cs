@@ -1,8 +1,7 @@
-﻿using System.Formats.Cbor;
-using System.Net;
+﻿using System.Net;
 using System.Net.WebSockets;
 using CrystalConnector.Connector;
-using CrystalConnector.Connector.Packet.S2C;
+using CrystalConnector.Protocol.Packets;
 
 namespace CrystalConnector.Utilities;
 
@@ -34,11 +33,10 @@ public static class WebSocketExtension
         Purge(webSocket);
     }
 
-    public static async Task Send(this WebSocket webSocket, PacketS2C packet)
+    public static async Task Send(this WebSocket webSocket, IPacket packet)
     {
-        var writer = new CborWriter();
-        packet.Write(writer);
-        await webSocket.Send(writer.Encode());
+        var bytes = packet.Write();
+        await webSocket.Send(bytes);
     }
 
     public static async Task Send(this WebSocket webSocket, byte[] data)
